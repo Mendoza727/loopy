@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-[Route("api/upload")] // ⬅️ Se especifica directamente la ruta del controlador
+[Route("api/upload")] // ⬅️ Especificamos la ruta del controlador
 [ApiController]
 public class UploadController : ControllerBase
 {
@@ -15,7 +15,7 @@ public class UploadController : ControllerBase
         _env = env;
     }
 
-    [HttpPost] // ⬅️ Se elimina ("upload") para que la ruta sea simplemente "api/upload"
+    [HttpPost] // ⬅️ La ruta será "api/upload"
     public async Task<IActionResult> UploadImage(IFormFile file)
     {
         if (file == null || file.Length == 0)

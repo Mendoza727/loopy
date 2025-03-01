@@ -88,10 +88,6 @@ namespace loopy.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ImagenPerfilUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)

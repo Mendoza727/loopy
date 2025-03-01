@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using loopy.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using loopy.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,8 @@ builder.Services.AddAuthorization();
 // Agregar servicios al contenedor
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IStatsService, StatsService>();
+builder.Services.AddScoped<ProductoService>();
+builder.Services.AddScoped<CategoriaService>();
 
 builder.Services.AddHttpContextAccessor();
 

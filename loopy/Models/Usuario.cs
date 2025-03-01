@@ -18,7 +18,5 @@ namespace loopy.Models
         [Required]
         [StringLength(255)]
         public string PasswordHash { get; set; }
-
-        public string ImagenPerfilUrl { get; set; }
     }
 }

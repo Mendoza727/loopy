@@ -1,12 +1,13 @@
 ﻿@{
     ViewData["Title"] = "Home";
 }
+
 <h2 class="mb-4">Productos</h2>
 <div class="container">
     <div class="row">
         <div class="col-9">
             <form class="d-flex ms-auto me-3">
-                <input class="form-control search-bar" type="search" placeholder="Buscar" aria-label="Buscar">
+                <input id="search-bar" class="form-control search-bar" type="search" placeholder="Buscar" aria-label="Buscar">
             </form>
         </div>
         <div class="col-1">
@@ -21,4 +22,147 @@
             </div>
         </div>
     </div>
+
+    <!-- Contenedor donde se mostrarán los productos -->
+    <div class="row mt-4" id="productos-container">
+        <!-- Los productos se insertarán aquí dinámicamente -->
+    </div>
 </div>
+
+<!-- Botón flotante para abrir el modal -->
+<button class="btn btn-primary floating-btn" data-bs-toggle="modal" data-bs-target="#agregarProductoModal">
+    +
+</button>
+
+<!-- Modal para añadir un producto -->
+<div class="modal fade" id="agregarProductoModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Agregar Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="productoForm">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cantidad" class="form-label">Cantidad</label>
+                        <input type="number" class="form-control" id="cantidad" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="precio" class="form-label">Precio</label>
+                        <input type="number" step="0.01" class="form-control" id="precio" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="imagen" class="form-label">Subir Imagen</label>
+                        <input type="file" class="form-control" id="imagen">
+                    </div>
+                    <div class="mb-3">
+                        <label for="categoria" class="form-label">Categoría</label>
+                        <select class="form-select" id="categoria">
+                            <option value="electronica">Electrónica</option>
+                            <option value="ropa">Ropa</option>
+                            <option value="alimentos">Alimentos</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('/productos') // Llamamos a la API
+            .then(response => response.json())
+            .then(data => {
+                let productosContainer = document.getElementById("productos-container");
+                productosContainer.innerHTML = ""; // Limpiar contenido anterior
+
+                if (data.length === 0) {
+                    productosContainer.innerHTML = `
+                        <div class="col-12 d-flex flex-column align-items-center justify-content-center empty-container">
+                            <p class="text-muted">Sin información disponible</p>
+                            <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#agregarProductoModal">Agregar producto</button>
+                        </div>
+                    `;
+                } else {
+                    data.forEach(producto => {
+                        let productoHTML = `
+                            <div class="col-md-4">
+                                <div class="card mb-4">
+                                    <img src="${producto.imagenUrl || 'https://via.placeholder.com/150'}" class="card-img-top" alt="${producto.nombre}">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${producto.nombre}</h5>
+                                        <p class="card-text">${producto.descripcion || 'Sin descripción'}</p>
+                                        <p class="fw-bold">$${producto.precio}</p>
+                                        <button class="btn btn-primary">Agregar al carrito</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        productosContainer.innerHTML += productoHTML;
+                    });
+                }
+            })
+            .catch(error => console.error("Error al obtener productos:", error));
+
+        // Capturar el evento de envío del formulario
+        document.getElementById("productoForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Evitar recarga
+
+            let nombre = document.getElementById("nombre").value;
+            let cantidad = document.getElementById("cantidad").value;
+            let precio = document.getElementById("precio").value;
+            let imagen = document.getElementById("imagen").files[0]; // Obtener imagen
+            let categoria = document.getElementById("categoria").value;
+
+            let formData = new FormData();
+            formData.append("nombre", nombre);
+            formData.append("cantidad", cantidad);
+            formData.append("precio", precio);
+            formData.append("imagen", imagen);
+            formData.append("categoria", categoria);
+
+            fetch("/productos/crear-producto", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("Producto agregado correctamente");
+                document.getElementById("productoForm").reset();
+                document.querySelector("#agregarProductoModal .btn-close").click(); // Cerrar modal
+                location.reload(); // Recargar la página para mostrar el nuevo producto
+            })
+            .catch(error => console.error("Error al agregar producto:", error));
+        });
+    });
+</script>
+
+<style>
+    .floating-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        font-size: 24px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .empty-container {
+        height: 50vh;
+        text-align: center;
+    }
+</style>

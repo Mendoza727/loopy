@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 public interface IAuthService
 {
     Task<bool> LoginAsync(string email, string password);
-    Task<bool> RegisterAsync(string name, string email, string password, string imagenPerfilUrl);
+    Task<bool> RegisterAsync(string name, string email, string password);
     Task LogoutAsync();
 }
 
@@ -32,7 +32,7 @@ public class AuthService : IAuthService
             return false;
 
         var claims = new List<Claim>
-        {
+        {   
             new Claim(ClaimTypes.Name, user.Nombre),
             new Claim(ClaimTypes.Email, user.Email)
         };
@@ -46,8 +46,6 @@ public class AuthService : IAuthService
             throw new InvalidOperationException("HttpContext is null");
         }
 
-        httpContext.Session.SetString("ImagePerfilUrl", user.ImagenPerfilUrl ?? "https://github.com/mdo.png");
-
         await httpContext.SignInAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
             new ClaimsPrincipal(claimsIdentity),
@@ -57,7 +55,7 @@ public class AuthService : IAuthService
         return true;
     }
 
-    public async Task<bool> RegisterAsync(string name, string email, string password, string imagenPerfilUrl)
+    public async Task<bool> RegisterAsync(string name, string email, string password)
     {
         if (await _context.Usuarios.AnyAsync(u => u.Email == email))
             return false;
@@ -68,8 +66,7 @@ public class AuthService : IAuthService
         {
             Nombre = name,
             Email = email,
-            PasswordHash = hashedPassword,
-            ImagenPerfilUrl = imagenPerfilUrl
+            PasswordHash = hashedPassword
         };
 
         _context.Usuarios.Add(user);

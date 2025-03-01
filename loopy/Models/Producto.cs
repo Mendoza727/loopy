@@ -7,6 +7,7 @@ namespace loopy.Models
     public class Producto
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required]

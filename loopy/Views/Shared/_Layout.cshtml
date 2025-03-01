@@ -39,7 +39,7 @@
         }
 
         .product-select {
-            width: 170px;
+            width: 100px;
             padding: 5px;
             border-radius: 5px;
             background-color: #fff;
@@ -293,15 +293,9 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-users"></i>
-                                    Usuarios
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
+                                <a class="nav-link" href="/api/category">
                                     <i class="fas fa-chart-bar"></i>
-                                    Categorias
+                                    Categorías
                                 </a>
                             </li>
                         </ul>
@@ -322,7 +316,6 @@
                             <div class="dropdown">
                                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle"
                                     id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="@Context.Session.GetString("ImagePerfilUrl")" alt="mdo" class="user-avatar me-2">
                                     <span>@User.Identity.Name</span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser1">

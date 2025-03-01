@@ -53,24 +53,18 @@ public class AuthController : Controller
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromForm] string name, [FromForm] string email, [FromForm] string password, [FromForm] string imagenPerfilUrl)
+    public async Task<IActionResult> Register([FromForm] string name, [FromForm] string email, [FromForm] string password)
     {
-        if (string.IsNullOrEmpty(imagenPerfilUrl))
-            imagenPerfilUrl = "/images/default-profile.png";
-
-        bool isRegistered = await _authService.RegisterAsync(name, email, password, imagenPerfilUrl);
-
+        bool isRegistered = await _authService.RegisterAsync(name, email, password);
+    
         if (!isRegistered)
         {
-            ViewBag.Error = "El correo ya está registrado.";
-            return RedirectToAction("Login", "Auth");
+            return BadRequest(new { message = "El correo ya está registrado." }); // ⛔ No redirige, solo devuelve un error
         }
-
-        // Guardamos el mensaje en TempData
-        TempData["SuccessMessage"] = "Usuario creado correctamente. Ya puedes iniciar sesión.";
-
-        return RedirectToAction("Login", "Auth");
+    
+        return Ok(new { message = "Usuario creado correctamente. Ya puedes iniciar sesión." }); // ✅ Respuesta JSON sin redirección
     }
+
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
