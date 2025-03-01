@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,43 +8,349 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/loopy.styles.css" asp-append-version="true" />
-</head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">loopy</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - loopy - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #4f46e5;
+            --accent-color: #ec4899;
+            --background-color: #f9fafb;
+            --text-color: #111827;
+            --card-bg: #ffffff;
+            --sidebar-width: 250px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding-top: 20px;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin: 5px 15px;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: var(--primary-color);
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar {
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card {
+            color: white;
+            position: relative;
+        }
+
+        .stat-card .icon {
+            font-size: 3rem;
+            opacity: 0.2;
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+        }
+
+        .product-card img {
+            height: 200px;
+            object-fit: cover;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .table {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table thead th {
+            background-color: rgba(99, 102, 241, 0.1);
+            color: var(--primary-color);
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        @@media(max - width: 768px) {
+                .sidebar {
+                    transform: translateX(-100%);
+                }
+
+                .main-content {
+                    margin-left: 0;
+                }
+
+                .sidebar.active {
+                    transform: translateX(0);
+                }
+
+                .main-content.active {
+                    margin-left: 0;
+                }
+
+                body.sidebar-active {
+                    overflow: hidden;
+                }
+
+                .overlay {
+                    display: none;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    z-index: 999;
+                }
+
+                .overlay.active {
+                    display: block;
+                }
+            }
+
+            /* Estilos modernos adicionales */
+            .search-bar {
+                border-radius: 20px;
+                background-color: rgba(99, 102, 241, 0.1);
+                border: none;
+            }
+
+            .search-bar:focus {
+                box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+            }
+
+            .user-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+
+            .badge {
+                padding: 0.5em 0.75em;
+                border-radius: 20px;
+            }
+
+            .progress {
+                height: 8px;
+                border-radius: 4px;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="wrapper">
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <nav id="sidebar" class="sidebar">
+                    <div class="position-sticky">
+                        <div class="d-flex justify-content-center align-items-center mb-4">
+                            <h2 class="mb-0">Dashboard</h2>
+                        </div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#">
+                                    <i class="fas fa-box"></i>
+                                    Productos
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <i class="fas fa-users"></i>
+                                    Usuarios
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <i class="fas fa-chart-bar"></i>
+                                    Categorias
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+
+                <!-- Overlay for mobile -->
+                <div id="overlay" class="overlay"></div>
+            }
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <div id="content" class="main-content">
+                    <nav class="navbar navbar-expand-lg navbar-light mb-4">
+                        <div class="container-fluid">
+                            <button type="button" id="sidebarCollapse" class="btn btn-primary">
+                                <i class="fas fa-bars"></i>
+                            </button>
+                            <div class="dropdown">
+                                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle"
+                                    id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="https://github.com/mdo.png" alt="mdo" class="user-avatar me-2">
+                                    <span>@User.Identity.Name</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser1">
+                                    <li>
+                                        <form asp-action="Logout" asp-controller="Auth" method="post">
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </nav>
+
+                    <div class="container-fluid">
+                        <!-- Stats Cards -->
+                        <div class="row g-4 mb-4 justify-content-center">
+                            @* total productos *@
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card stat-card" style="background-color: #10b981;">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Productos</h5>
+                                        <h2 class="card-text">254</h2>
+                                        <div class="progress mt-2" style="height: 5px;">
+                                            <div class="progress-bar" role="progressbar"
+                                                style="width: 60%; background-color: rgba(255,255,255,0.5);" aria-valuenow="60"
+                                                aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <i class="fas fa-box icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @* total usuarios *@
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card stat-card" style="background-color: #f59e0b;">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Usuarios</h5>
+                                        <h2 class="card-text">1,258</h2>
+                                        <div class="progress mt-2" style="height: 5px;">
+                                            <div class="progress-bar" role="progressbar"
+                                                style="width: 80%; background-color: rgba(255,255,255,0.5);" aria-valuenow="80"
+                                                aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <i class="fas fa-users icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            @* total categorias *@
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card stat-card" style="background-color: #6366f1;">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Ventas</h5>
+                                        <h2 class="card-text">$15,350</h2>
+                                        <div class="progress mt-2" style="height: 5px;">
+                                            <div class="progress-bar" role="progressbar"
+                                                style="width: 70%; background-color: rgba(255,255,255,0.5);" aria-valuenow="70"
+                                                aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <i class="fas fa-chart-line icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @RenderBody()
+                </div>
+            }
+            else
+            {
+                <div class="container">
+                    <main role="main" class="pb-3">
+                        @RenderBody()
+                    </main>
+                </div>
+            }
         </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
-</body>
-</html>
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var sidebar = document.getElementById('sidebar');
+                var content = document.getElementById('content');
+                var sidebarCollapse = document.getElementById('sidebarCollapse');
+                var overlay = document.getElementById('overlay');
+
+                function toggleSidebar() {
+                    sidebar.classList.toggle('active');
+                    content.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                    document.body.classList.toggle('sidebar-active');
+                }
+
+                sidebarCollapse.addEventListener('click', toggleSidebar);
+                overlay.addEventListener('click', toggleSidebar);
+            });
+        </script>
+        @await RenderSectionAsync("Scripts", required: false)
+    </body>
+
+    </html>

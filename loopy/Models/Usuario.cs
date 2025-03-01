@@ -1,9 +1,24 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace loopy.Models
 {
-    public class ErrorViewModel
+    public class Usuario
     {
-        public string? RequestId { get; set; }
+        [Key]
+        public int Id { get; set; }
 
-        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+        [Required]
+        [StringLength(100)]
+        public string Nombre { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+
+        [Required]
+        [StringLength(255)]
+        public string PasswordHash { get; set; }
+
+        public string ImagenPerfilUrl { get; set; }
     }
 }

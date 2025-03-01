@@ -1,0 +1,73 @@
+@{
+    ViewData["Title"] = "Registrate";
+}
+
+<div class="container d-flex justify-content-center align-items-center mt-5 mb-5">
+    <div class="card shadow-lg border-0 overflow-hidden" style="max-width: 900px; width: 90%; border-radius: 20px;">
+        <div class="row g-0">
+            <!-- Sección de Imagen -->
+            <div class="col-md-5 d-md-block">
+                <div class="h-100 w-100" style="background: url('/images/login-bg.webp') center/cover no-repeat; min-height: 100%;"></div>
+            </div>
+
+            <!-- Sección de Formularios -->
+            <div class="col-md-7 p-4">
+                <h3 class="text-center mb-3 fw-bold">Crea tu cuenta</h3>
+                
+                <form id="register-form" asp-controller="Auth" asp-action="Register" method="post">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre Completo</label>
+                        <input type="text" class="form-control" name="name" placeholder="Tu Nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Correo Electrónico</label>
+                        <input type="email" class="form-control" name="email" placeholder="correo@ejemplo.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Contraseña</label>
+                        <input type="password" class="form-control" name="password" placeholder="********" required>
+                    </div>
+
+                    <!-- Dropzone para subir imágenes -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Imagen de Perfil</label>
+                        <div id="dropzone" class="dropzone border border-2 rounded p-3 text-center">
+                            <p class="text-muted">Arrastra y suelta una imagen aquí o haz clic para seleccionarla</p>
+                        </div>
+                        <input type="hidden" id="imagenPerfilUrl" name="imagenPerfilUrl">
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 mt-3 fw-bold">Registrarse</button>
+                    <div class="text-center mt-3">
+                        <p class="text-muted">¿Ya tienes cuenta? <a href="/auth/login/" class="text-primary fw-bold">Inicia Sesión</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos de Dropzone -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
+
+<script>
+    Dropzone.autoDiscover = false;
+
+    let myDropzone = new Dropzone("#dropzone", {
+        url: "/api/upload", 
+        maxFiles: 1,
+        acceptedFiles: "image/*",
+        dictDefaultMessage: "Arrastra una imagen o haz clic para subirla",
+        success: function(file, response) {
+            document.getElementById("imagenPerfilUrl").value = response.url;
+        }
+    });
+
+    document.getElementById("register-form").addEventListener("submit", function(event) {
+        if (!document.getElementById("imagenPerfilUrl").value) {
+            event.preventDefault();
+            alert("Por favor, sube una imagen de perfil antes de registrarte.");
+        }
+    });
+</script>

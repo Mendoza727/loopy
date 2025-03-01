@@ -1,9 +1,17 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace loopy.Models
 {
-    public class ErrorViewModel
+    public class Categoria
     {
-        public string? RequestId { get; set; }
+        [Key]
+        public int Id { get; set; }
 
-        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+        [Required]
+        [StringLength(100)]
+        public string Nombre { get; set; }
+
+        public ICollection<Producto> Productos { get; set; }
     }
 }
+    
