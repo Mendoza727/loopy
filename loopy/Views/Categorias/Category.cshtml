@@ -34,61 +34,174 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Cliente</th>
-                    <th>Fecha</th>
-                    <th>Total</th>
-                    <th>Estado</th>
+                    <th>Categoria</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td>#1234</td>
-                    <td>Juan Pérez</td>
-                    <td>2023-03-01</td>
-                    <td>$120.50</td>
-                    <td><span class="badge bg-success">Completado</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
-                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>#1235</td>
-                    <td>María López</td>
-                    <td>2023-03-02</td>
-                    <td>$75.20</td>
-                    <td><span class="badge bg-warning">Pendiente</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
-                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>#1236</td>
-                    <td>Carlos Rodríguez</td>
-                    <td>2023-03-03</td>
-                    <td>$200.00</td>
-                    <td><span class="badge bg-info">En proceso</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
-                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button>
-                    </td>
-                </tr>
+            <tbody id="categorias-table">
+                <!-- Categorías dinámicas -->
             </tbody>
         </table>
     </div>
 </div>
 
 <!-- Botón flotante para agregar categorías -->
-<button class="floating-button" onclick="agregarCategoria()">
+<button class="floating-button" onclick="agregarFila()">
     <i class="fas fa-plus"></i>
 </button>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    function agregarCategoria() {
-        alert("Abrir modal para agregar una nueva categoría.");
+document.addEventListener('DOMContentLoaded', async () => {
+    await cargarCategorias();
+});
+
+async function cargarCategorias() {
+    try {
+        const response = await fetch('/api'); // Corregido el endpoint
+        const categorias = await response.json();
+        const tbody = document.getElementById('categorias-table');
+        tbody.innerHTML = '';
+
+        categorias.forEach(categoria => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${categoria.id}</td>
+                <td>${categoria.nombre}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="editarCategoria(${categoria.id}, '${categoria.nombre}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarCategoria(${categoria.id})"><i class="fas fa-trash"></i></button>
+                </td>
+
+            `;
+            tbody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Error cargando categorías:', error);
     }
+}
+
+function agregarFila() {
+    const tbody = document.getElementById('categorias-table');
+    const newRow = document.createElement('tr');
+
+    newRow.innerHTML = `
+        <td>Nuevo</td>
+        <td><input type="text" class="form-control" id="nuevo-nombre" placeholder="Nueva categoría"></td>
+        <td>
+            <button class="btn btn-sm btn-success" onclick="guardarCategoria(this)">✔</button>
+            <button class="btn btn-sm btn-danger" onclick="this.parentElement.parentElement.remove()">✖</button>
+        </td>
+    `;
+
+    tbody.appendChild(newRow);
+}
+
+async function guardarCategoria(button) {
+    const input = button.parentElement.parentElement.querySelector('input');
+    const nombre = input.value.trim();
+
+    if (!nombre) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo vacío',
+            text: 'Ingresa un nombre de categoría.',
+        });
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Éxito!',
+                text: 'Categoría creada correctamente.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            await cargarCategorias(); // Recargar categorías
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message || 'No se pudo crear la categoría.',
+            });
+        }
+    } catch (error) {
+        console.error('Error al guardar categoría:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error inesperado',
+            text: 'Ocurrió un error al guardar la categoría.',
+        });
+    }
+}
+
+async function editarCategoria(id, nombreActual) {
+    const { value: nuevoNombre } = await Swal.fire({
+        title: 'Editar Categoría',
+        input: 'text',
+        inputValue: nombreActual,
+        showCancelButton: true,
+        confirmButtonText: 'Guardar',
+        cancelButtonText: 'Cancelar',
+        inputValidator: (value) => {
+            if (!value) return 'El nombre no puede estar vacío';
+        }
+    });
+
+    if (!nuevoNombre) return; // Si cancela, no hace nada
+
+    try {
+        const response = await fetch(`/api/update/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre: nuevoNombre })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Error al actualizar');
+
+        Swal.fire('¡Actualizado!', data.message, 'success');
+        cargarCategorias(); // Recargar la tabla
+    } catch (error) {
+        Swal.fire('Error', error.message, 'error');
+    }
+}
+
+
+async function eliminarCategoria(id) {
+    const confirmacion = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: 'Esta acción no se puede deshacer',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (!confirmacion.isConfirmed) return; // Si cancela, no hace nada
+
+    try {
+        const response = await fetch(`/api/delete/${id}`, { method: 'DELETE' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Error al eliminar');
+
+        Swal.fire('¡Eliminado!', data.message, 'success');
+        cargarCategorias(); // Recargar la tabla
+    } catch (error) {
+        Swal.fire('Error', error.message, 'error');
+    }
+}
 </script>
 
 </body>

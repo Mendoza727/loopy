@@ -30,17 +30,25 @@ builder.Services.AddScoped<CategoriaService>();
 builder.Services.AddHttpContextAccessor();
 
 // Configurar Session
-builder.Services.AddDistributedMemoryCache(); // Necesario para Session
+builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // Duración de la sesión
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
 
+// Configurar CORS antes de `builder.Build()`
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader());
+});
+
 // Registrar controladores con vistas
 builder.Services.AddControllersWithViews();
-
 
 var app = builder.Build();
 
@@ -55,17 +63,17 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// Habilitar autenticación, autorización y sesión
+// Habilitar CORS antes de autenticación/autorización
+app.UseCors("AllowAll");
+
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseSession(); // Agregado aquí
+app.UseSession();
 
-app.UseEndpoints(endpoints =>
-{
-    _ = endpoints.MapControllerRoute(
-        name: "default",
-        pattern: "{controller=Home}/{action=Index}");
-});
+// Configurar rutas correctamente
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}");
 
 app.MapControllers();
 

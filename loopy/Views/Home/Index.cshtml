@@ -7,24 +7,21 @@
     <div class="row">
         <div class="col-9">
             <form class="d-flex ms-auto me-3">
-                <input id="search-bar" class="form-control search-bar" type="search" placeholder="Buscar" aria-label="Buscar">
+                <input id="search-bar" class="form-control search-bar" type="search" placeholder="Buscar"
+                    aria-label="Buscar">
             </form>
         </div>
         <div class="col-1">
             <div class="custom-select-wrapper">
                 <select class="custom-select product-select">
-                    <option value="1">asasaasass1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
+                    <option value="" disabled selected>Seleccione una opción</option>
                 </select>
             </div>
         </div>
     </div>
 
     <!-- Contenedor donde se mostrarán los productos -->
-    <div class="row mt-4" id="productos-container">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-5" id="productos-container">
         <!-- Los productos se insertarán aquí dinámicamente -->
     </div>
 </div>
@@ -63,10 +60,7 @@
                     <div class="mb-3">
                         <label for="categoria" class="form-label">Categoría</label>
                         <select class="form-select" id="categoria">
-                            <option value="electronica">Electrónica</option>
-                            <option value="ropa">Ropa</option>
-                            <option value="alimentos">Alimentos</option>
-                            <option value="otros">Otros</option>
+                            <option value="" disabled selected>Seleccione una categoría</option>
                         </select>
                     </div>
                     <button type="submit" class="btn btn-success">Guardar</button>
@@ -76,8 +70,54 @@
     </div>
 </div>
 
+@* edit *@
+<div class="modal fade" id="editarProductoModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarModalLabel">Editar Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarProductoForm">
+                    <input type="hidden" id="productoId">
+                    <div class="mb-3">
+                        <label for="editarNombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editarCantidad" class="form-label">Cantidad</label>
+                        <input type="number" class="form-control" id="cantidad" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editarPrecio" class="form-label">Precio</label>
+                        <input type="number" step="0.01" class="form-control" id="precio" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editarImagen" class="form-label">Subir Imagen</label>
+                        <input type="file" class="form-control" id="imagenPreview">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editarCategoria" class="form-label">Categoría</label>
+                        <select class="form-select" id="categoria">
+                            <option value="" disabled selected>Seleccione una categoría</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+
+
+
         fetch('/productos') // Llamamos a la API
             .then(response => response.json())
             .then(data => {
@@ -86,26 +126,39 @@
 
                 if (data.length === 0) {
                     productosContainer.innerHTML = `
-                        <div class="col-12 d-flex flex-column align-items-center justify-content-center empty-container">
-                            <p class="text-muted">Sin información disponible</p>
-                            <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#agregarProductoModal">Agregar producto</button>
-                        </div>
-                    `;
+                            <div class="col-12 d-flex flex-column align-items-center justify-content-center empty-container">
+                                <p class="text-muted">Sin información disponible</p>
+                                <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#agregarProductoModal">Agregar producto</button>
+                            </div>
+                        `;
                 } else {
                     data.forEach(producto => {
                         let productoHTML = `
-                            <div class="col-md-4">
-                                <div class="card mb-4">
+                            <div class="col mt-5">
+                                <div class="card h-100 product-card position-relative">
                                     <img src="${producto.imagenUrl || 'https://via.placeholder.com/150'}" class="card-img-top" alt="${producto.nombre}">
+
+                                    <!-- Botones de editar y eliminar -->
+                                    <div class="position-absolute top-0 end-0 m-2 d-flex gap-2">
+                                        <button class="btn btn-sm btn-warning" onclick="editarProducto(${producto.id})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="eliminarProducto(${producto.id})">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+
                                     <div class="card-body">
                                         <h5 class="card-title">${producto.nombre}</h5>
-                                        <p class="card-text">${producto.descripcion || 'Sin descripción'}</p>
-                                        <p class="fw-bold">$${producto.precio}</p>
-                                        <button class="btn btn-primary">Agregar al carrito</button>
+                                        <p class="text-muted">Cantidad: ${producto.cantidad}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <p class="price fw-bold">$${producto.precio}</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        `;
+
+                            `;
                         productosContainer.innerHTML += productoHTML;
                     });
                 }
@@ -113,36 +166,128 @@
             .catch(error => console.error("Error al obtener productos:", error));
 
         // Capturar el evento de envío del formulario
-        document.getElementById("productoForm").addEventListener("submit", function(event) {
+        document.getElementById("productoForm").addEventListener("submit", function (event) {
             event.preventDefault(); // Evitar recarga
 
             let nombre = document.getElementById("nombre").value;
             let cantidad = document.getElementById("cantidad").value;
             let precio = document.getElementById("precio").value;
             let imagen = document.getElementById("imagen").files[0]; // Obtener imagen
-            let categoria = document.getElementById("categoria").value;
+            let categoriaId = document.getElementById("categoria").value; // Debe ser solo el ID
+
+            console.log(categoriaId);
 
             let formData = new FormData();
             formData.append("nombre", nombre);
             formData.append("cantidad", cantidad);
             formData.append("precio", precio);
             formData.append("imagen", imagen);
-            formData.append("categoria", categoria);
+            formData.append("categoria", categoriaId);
 
-            fetch("/productos/crear-producto", {
+            fetch("/productos/crear", {
                 method: "POST",
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                alert("Producto agregado correctamente");
-                document.getElementById("productoForm").reset();
-                document.querySelector("#agregarProductoModal .btn-close").click(); // Cerrar modal
-                location.reload(); // Recargar la página para mostrar el nuevo producto
-            })
-            .catch(error => console.error("Error al agregar producto:", error));
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Error en la respuesta del servidor");
+                    }
+                    return response.text();
+                })
+                .then(text => text ? JSON.parse(text) : {}) // Si no hay texto, retorna un objeto vacío
+                .then(data => {
+                    alert(data.message || "Producto agregado correctamente");
+                    document.getElementById("productoForm").reset();
+                    document.querySelector("#agregarProductoModal .btn-close").click();
+                    location.reload();
+                })
+                .catch(error => console.error("Error al agregar producto:", error))
         });
     });
+
+    async function cargarCategorias() {
+        try {
+            const response = await fetch('/api'); // Ajusta el endpoint según tu API
+            const categorias = await response.json();
+
+            const selects = [
+                document.getElementById("categoria"),
+                document.querySelector(".product-select")
+            ];
+
+            selects.forEach(select => {
+                if (select) {
+                    select.innerHTML = '<option value="" disabled selected>Seleccione una opción</option>'; // Limpiar opciones previas
+
+                    categorias.forEach(categoria => {
+                        let option = document.createElement("option");
+                        option.value = categoria.id; // ID como value
+                        option.textContent = categoria.nombre; // Nombre como texto visible
+                        select.appendChild(option);
+                    });
+                }
+            });
+        } catch (error) {
+            console.error('Error cargando categorías:', error);
+        }
+    }
+
+    // Llamar a la función al cargar la página
+    document.addEventListener("DOMContentLoaded", cargarCategorias);
+
+    function eliminarProducto(id) {
+        Swal.fire({
+            title: "¿Estás seguro?",
+            text: "Esta acción no se puede deshacer.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Sí, eliminar",
+            cancelButtonText: "Cancelar"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/productos/eliminar/${id}`, { method: "DELETE" })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        Swal.fire("Eliminado", data.message, "success");
+                        location.reload(); // Recargar la página
+                    })
+                    .catch((error) => {
+                        Swal.fire("Error", "No se pudo eliminar el producto", "error");
+                        console.error("Error eliminando producto:", error);
+                    });
+            }
+        });
+    }
+
+
+    function editarProducto(id) {
+        fetch(`/productos/${id}`)
+            .then((response) => response.json())
+            .then((producto) => {
+                console.log(producto); // Verifica si el producto se carga correctamente
+
+                if (!producto || producto.message) {
+                    Swal.fire("Error", "Producto no encontrado", "error");
+                    return;
+                }
+
+                document.getElementById("productoId").value = producto.id;
+                document.getElementById("nombre").value = producto.nombre;
+                document.getElementById("cantidad").value = producto.cantidad;
+                document.getElementById("precio").value = producto.precio;
+                document.getElementById("categoria").value = producto.categoriaId;
+                document.getElementById("imagenPreview").src = producto.imagenUrl ? producto.imagenUrl : "https://via.placeholder.com/150";
+
+                let modal = new bootstrap.Modal(document.getElementById("editarProductoModal"));
+                modal.show();
+            })
+            .catch((error) => {
+                Swal.fire("Error", "No se pudo obtener el producto", "error");
+                console.error("Error al obtener el producto:", error);
+            });
+    }
 </script>
 
 <style>

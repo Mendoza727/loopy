@@ -3,25 +3,29 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using loopy.Services;
 using loopy.Models;
+using loopy.Services;
+using loopy.Data;
+
+namespace loopy.Controllers;
 
 [Route("productos")]
 [ApiController]
 public class ProductosController : ControllerBase
 {
     private readonly ProductoService _productoService;
+
     public ProductosController(ProductoService productoService)
     {
         _productoService = productoService;
     }
-    // Obtener todos los productos
+
     [HttpGet]
     public async Task<ActionResult<List<Producto>>> GetAll()
     {
         return await _productoService.GetAllProductosAsync();
     }
-    // Obtener un producto por ID
+
     [HttpGet("{id}")]
     public async Task<ActionResult<Producto>> GetById(int id)
     {
@@ -30,28 +34,57 @@ public class ProductosController : ControllerBase
             return NotFound(new { message = "Producto no encontrado." });
         return producto;
     }
-    // Crear un producto con imagen
-    [HttpPost("crear-producto")]
-    public async Task<ActionResult> Create([FromForm] Producto producto, [FromForm] IFormFile imagen)
+
+    [HttpPost("crear")]
+    public async Task<ActionResult> CrearProducto(
+        [FromForm] string nombre,
+        [FromForm] int cantidad,
+        [FromForm] decimal precio,
+        [FromForm] int categoria,
+        [FromForm] IFormFile imagen,
+        [FromServices] ApplicationDbContext context) // Inyectar el contexto de la base de datos
     {
+        var categoriaid = await context.Categorias.FindAsync(categoria);
+
+        if (categoriaid == null)
+        {
+            return BadRequest("La categoría especificada no existe.");
+        }
+
+        var producto = new Producto
+        {
+            Nombre = nombre,
+            Cantidad = cantidad,
+            Precio = precio,
+            CategoriaId = categoria
+        };
+
         if (imagen != null)
         {
-            // Guardar la imagen en un directorio local (o en un servicio de almacenamiento)
             var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
+            Directory.CreateDirectory(uploads);
             var filePath = Path.Combine(uploads, imagen.FileName);
+
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await imagen.CopyToAsync(stream);
             }
-            // Guardar la ruta de la imagen en el producto
+
             producto.ImagenUrl = "/images/" + imagen.FileName;
         }
-        var created = await _productoService.CreateProductoAsync(producto);
-        if (!created)
-            return BadRequest(new { message = "Error al crear el producto." });
-        return Ok(new { message = "Producto creado correctamente." });
+        else
+        {
+            Console.WriteLine("No se recibió imagen.");
+        }
+
+        context.Productos.Add(producto);
+
+        await context.SaveChangesAsync();
+
+        return Ok(new { mensaje = "Producto creado exitosamente", producto });
     }
-    // Actualizar un producto
+
+
     [HttpPut("actualizar/{id}")]
     public async Task<ActionResult> Update(int id, [FromBody] Producto producto)
     {
@@ -61,7 +94,7 @@ public class ProductosController : ControllerBase
             return NotFound(new { message = "No se pudo actualizar el producto." });
         return Ok(new { message = "Producto actualizado correctamente." });
     }
-    // Eliminar un producto
+
     [HttpDelete("eliminar/{id}")]
     public async Task<ActionResult> Delete(int id)
     {

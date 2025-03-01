@@ -5,7 +5,7 @@ public interface IStatsService
 {
     Task<int> GetTotalProductosAsync();
     Task<int> GetTotalUsuariosAsync();
-    Task<decimal> GetTotalCategorias();
+    Task<int> GetTotalCategorias();
 }
 
 public class StatsService : IStatsService
@@ -27,7 +27,7 @@ public class StatsService : IStatsService
         return await _context.Usuarios.CountAsync();
     }
 
-    public async Task<decimal> GetTotalCategorias()
+    public async Task<int> GetTotalCategorias()
     {
         return await _context.Categorias.CountAsync();
     }

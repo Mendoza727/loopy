@@ -287,7 +287,7 @@
                         </div>
                         <ul class="nav flex-column">
                             <li class="nav-item">
-                                <a class="nav-link active" href="#">
+                                <a class="nav-link" href="/Home/Index">
                                     <i class="fas fa-box"></i>
                                     Productos
                                 </a>
@@ -403,6 +403,17 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', async () => {
+                const links = document.querySelectorAll(".nav-link");
+
+                    links.forEach(link => {
+                        if (link.href === window.location.href) {
+                            link.classList.add("active");
+                        } else {
+                            link.classList.remove("active");
+                        }
+                    });
+
+
                 try {
                     const productos = await fetch('/api/stats/productos').then(res => res.json());
                     const usuarios = await fetch('/api/stats/usuarios').then(res => res.json());

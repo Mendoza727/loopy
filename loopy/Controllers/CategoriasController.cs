@@ -28,7 +28,7 @@ public class CategoriasController : Controller
         return await _categoriaService.GetAllCategoriasAsync();
     }
     // Obtener una categoría por ID
-    [HttpGet("{id}")]
+    [HttpGet("by-id/{id}")]
     public async Task<ActionResult<Categoria>> GetById(int id)
     {
         var categoria = await _categoriaService.GetCategoriaByIdAsync(id);
@@ -37,16 +37,21 @@ public class CategoriasController : Controller
         return categoria;
     }
     // Crear una nueva categoría
-    [HttpPost]
+    [HttpPost("create")]
     public async Task<ActionResult> Create([FromBody] Categoria categoria)
     {
+        if (categoria == null || string.IsNullOrWhiteSpace(categoria.Nombre))
+            return BadRequest(new { message = "El nombre de la categoría es obligatorio." });
+    
         var created = await _categoriaService.CreateCategoriaAsync(categoria);
         if (!created)
             return BadRequest(new { message = "Error al crear la categoría." });
+    
         return Ok(new { message = "Categoría creada correctamente." });
     }
+
     // Actualizar una categoría
-    [HttpPut("{id}")]
+    [HttpPut("update/{id}")]
     public async Task<ActionResult> Update(int id, [FromBody] Categoria categoria)
     {
         categoria.Id = id;
@@ -56,7 +61,7 @@ public class CategoriasController : Controller
         return Ok(new { message = "Categoría actualizada correctamente." });
     }
     // Eliminar una categoría
-    [HttpDelete("{id}")]
+    [HttpDelete("delete/{id}")]
     public async Task<ActionResult> Delete(int id)
     {
         var deleted = await _categoriaService.DeleteCategoriaAsync(id);
