@@ -1,4 +1,5 @@
 using loopy.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -13,9 +14,15 @@ namespace loopy.Controllers
             _logger = logger;
         }
 
+        [Authorize]
         public IActionResult Index()
         {
             return View();
+        }
+
+        public IActionResult RedirectToLogin()
+        {
+            return RedirectToAction("Login", "Auth");
         }
 
         public IActionResult Privacy()
