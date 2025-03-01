@@ -31,6 +31,82 @@
             transition: all 0.3s ease;
         }
 
+        .product-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .product-select {
+            width: 170px;
+            padding: 5px;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        .btn-add-cart {
+            padding: 5px 10px;
+            border-radius: 5px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-add-cart:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Estilos para el select personalizado */
+        .custom-select-wrapper {
+            position: relative;
+            user-select: none;
+            width: 100%;
+        }
+
+        .custom-select {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border-style: solid;
+            border-radius: 0.5rem;
+        }
+
+        .custom-select select {
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            background-image: linear-gradient(45deg, transparent 50%, #394a6d 50%),
+                              linear-gradient(135deg, #394a6d 50%, transparent 50%);
+            background-position: calc(100% - 20px) calc(1em + 2px),
+                                 calc(100% - 15px) calc(1em + 2px);
+            background-size: 5px 5px, 5px 5px;
+            background-repeat: no-repeat;
+            width: 100%;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            transition: all 0.3s ease;
+        }
+
+        .custom-select select:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .custom-select select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(57, 74, 109, 0.2);
+        }
+
+        .custom-select select:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
         .sidebar {
             background-color: var(--card-bg);
             color: var(--text-color);
@@ -246,7 +322,7 @@
                             <div class="dropdown">
                                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle"
                                     id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="https://github.com/mdo.png" alt="mdo" class="user-avatar me-2">
+                                    <img src="@Context.Session.GetString("ImagePerfilUrl")" alt="mdo" class="user-avatar me-2">
                                     <span>@User.Identity.Name</span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser1">
@@ -270,7 +346,7 @@
                                 <div class="card stat-card" style="background-color: #10b981;">
                                     <div class="card-body">
                                         <h5 class="card-title">Productos</h5>
-                                        <h2 class="card-text">254</h2>
+                                        <h2 class="card-text" id="productos-count">...</h2>
                                         <div class="progress mt-2" style="height: 5px;">
                                             <div class="progress-bar" role="progressbar"
                                                 style="width: 60%; background-color: rgba(255,255,255,0.5);" aria-valuenow="60"
@@ -286,7 +362,7 @@
                                 <div class="card stat-card" style="background-color: #f59e0b;">
                                     <div class="card-body">
                                         <h5 class="card-title">Usuarios</h5>
-                                        <h2 class="card-text">1,258</h2>
+                                        <h2 class="card-text" id="usuarios-count">...</h2>
                                         <div class="progress mt-2" style="height: 5px;">
                                             <div class="progress-bar" role="progressbar"
                                                 style="width: 80%; background-color: rgba(255,255,255,0.5);" aria-valuenow="80"
@@ -302,8 +378,8 @@
                             <div class="col-md-3 col-sm-6">
                                 <div class="card stat-card" style="background-color: #6366f1;">
                                     <div class="card-body">
-                                        <h5 class="card-title">Ventas</h5>
-                                        <h2 class="card-text">$15,350</h2>
+                                        <h5 class="card-title">Categorias</h5>
+                                        <h2 class="card-text" id="ventas-count">...</h2>
                                         <div class="progress mt-2" style="height: 5px;">
                                             <div class="progress-bar" role="progressbar"
                                                 style="width: 70%; background-color: rgba(255,255,255,0.5);" aria-valuenow="70"
@@ -333,6 +409,22 @@
         <script src="~/js/site.js" asp-append-version="true"></script>
 
         <script>
+            document.addEventListener('DOMContentLoaded', async () => {
+                try {
+                    const productos = await fetch('/api/stats/productos').then(res => res.json());
+                    const usuarios = await fetch('/api/stats/usuarios').then(res => res.json());
+                    const categorias = await fetch('/api/stats/categorias').then(res => res.json());
+
+                    console.log(productos, usuarios, categorias);
+
+                    document.getElementById('productos-count').innerText = productos.total;
+                    document.getElementById('usuarios-count').innerText = usuarios.total;
+                    document.getElementById('ventas-count').innerText = categorias.total.toLocaleString();
+                } catch (error) {
+                    console.error('Error al obtener datos:', error);
+                }
+            });
+
             document.addEventListener('DOMContentLoaded', function () {
                 var sidebar = document.getElementById('sidebar');
                 var content = document.getElementById('content');

@@ -46,6 +46,8 @@ public class AuthService : IAuthService
             throw new InvalidOperationException("HttpContext is null");
         }
 
+        httpContext.Session.SetString("ImagePerfilUrl", user.ImagenPerfilUrl ?? "https://github.com/mdo.png");
+
         await httpContext.SignInAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
             new ClaimsPrincipal(claimsIdentity),

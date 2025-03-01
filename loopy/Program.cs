@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using loopy.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -8,29 +10,34 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
-// configuracion auth cookies
+// Configuración de autenticación con cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Auth/Login"; // Ruta para el inicio de sesión
-        options.LogoutPath = "/Auth/Logout"; // Ruta para el cierre de sesión
+        options.LoginPath = "/Auth/Login"; 
+        options.LogoutPath = "/Auth/Logout";
     });
 
 builder.Services.AddAuthorization();
 
-
-
 // Agregar servicios al contenedor
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IStatsService, StatsService>();
 
-// Agregar autenticación y autorización
-builder.Services.AddAuthentication();
-builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
+
+// Configurar Session
+builder.Services.AddDistributedMemoryCache(); // Necesario para Session
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Duración de la sesión
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 // Registrar controladores con vistas
 builder.Services.AddControllersWithViews();
+
 
 var app = builder.Build();
 
@@ -56,9 +63,10 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-
+// Habilitar autenticación, autorización y sesión
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseSession(); // Agregado aquí
 
 app.UseEndpoints(endpoints =>
 {
