@@ -51,17 +51,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// Redirigir automáticamente a Auth/Login si accede a la raíz "/"
-app.Use(async (context, next) =>
-{
-    if (context.Request.Path == "/")
-    {
-        context.Response.Redirect("/Auth/Login");
-        return;
-    }
-    await next();
-});
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
