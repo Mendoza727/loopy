@@ -15,7 +15,7 @@ Antes de ejecutar el proyecto, asegúrate de tener instalado:
 ### 1️⃣ Clonar el repositorio
 ```sh
     git clone https://github.com/Mendoza727/loopy.git
-    cd tu-repositorio
+    cd loopy
 ```
 
 ### 2️⃣ Configurar la cadena de conexión
